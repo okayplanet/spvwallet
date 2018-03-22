@@ -2,7 +2,7 @@ package spvwallet
 
 import (
 	"encoding/json"
-	"github.com/OpenBazaar/wallet-interface"
+	"github.com/okayplanet/wallet-interface"
 	"golang.org/x/net/proxy"
 	"net"
 	"net/http"

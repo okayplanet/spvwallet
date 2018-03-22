@@ -6,20 +6,20 @@ package spvwallet
 import (
 	"bytes"
 	"errors"
-	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcutil/bloom"
+	"github.com/okayplanet/wallet-interface"
+	"github.com/ltcsuite/ltcd/blockchain"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/txscript"
+	"github.com/ltcsuite/ltcd/wire"
+	"github.com/ltcsuite/ltcutil"
+	"github.com/ltcsuite/ltcutil/bloom"
 	"sync"
 	"time"
 )
 
 type TxStore struct {
-	adrs           []btcutil.Address
+	adrs           []ltcutil.Address
 	watchedScripts [][]byte
 	txids          map[string]int32
 	addrMutex      *sync.Mutex
@@ -170,7 +170,7 @@ func (ts *TxStore) GetPendingInv() (*wire.MsgInv, error) {
 func (ts *TxStore) PopulateAdrs() error {
 	keys := ts.keyManager.GetKeys()
 	ts.addrMutex.Lock()
-	ts.adrs = []btcutil.Address{}
+	ts.adrs = []ltcutil.Address{}
 	for _, k := range keys {
 		addr, err := k.Address(ts.params)
 		if err != nil {
@@ -193,7 +193,7 @@ func (ts *TxStore) Ingest(tx *wire.MsgTx, height int32) (uint32, error) {
 	var hits uint32
 	var err error
 	// Tx has been OK'd by SPV; check tx sanity
-	utilTx := btcutil.NewTx(tx) // convert for validation
+	utilTx := ltcutil.NewTx(tx) // convert for validation
 	// Checks basic stuff like there are inputs and ouputs
 	err = blockchain.CheckTransactionSanity(utilTx)
 	if err != nil {

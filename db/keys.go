@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/ltcsuite/ltcd/btcec"
 	"math/rand"
 	"strconv"
 	"sync"

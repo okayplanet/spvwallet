@@ -6,12 +6,12 @@ import (
 	"github.com/OpenBazaar/spvwallet"
 	"github.com/OpenBazaar/spvwallet/api/pb"
 	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/txscript"
+	"github.com/ltcsuite/ltcd/wire"
+	"github.com/ltcsuite/ltcutil"
+	"github.com/ltcsuite/ltcutil/hdkeychain"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"golang.org/x/net/context"
@@ -110,7 +110,7 @@ func (s *server) HasKey(ctx context.Context, in *pb.Address) (*pb.BoolResponse, 
 	default:
 		return nil, errors.New("Unknown network parameters")
 	}
-	addr, err := btcutil.DecodeAddress(in.Addr, &p)
+	addr, err := ltcutil.DecodeAddress(in.Addr, &p)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (s *server) Spend(ctx context.Context, in *pb.SpendInfo) (*pb.Txid, error) 
 	default:
 		return nil, errors.New("Unknown fee level")
 	}
-	addr, err := btcutil.DecodeAddress(in.Address, &p)
+	addr, err := ltcutil.DecodeAddress(in.Address, &p)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (s *server) AddWatchedScript(ctx context.Context, in *pb.Address) (*pb.Empt
 		default:
 			return nil, errors.New("Unknown network parameters")
 		}
-		addr, err := btcutil.DecodeAddress(in.Addr, &p)
+		addr, err := ltcutil.DecodeAddress(in.Addr, &p)
 		if err != nil {
 			return nil, err
 		}
@@ -328,9 +328,9 @@ func (s *server) SweepAddress(ctx context.Context, in *pb.SweepInfo) (*pb.Txid, 
 	default:
 		return nil, errors.New("Unknown network parameters")
 	}
-	var addr *btcutil.Address
+	var addr *ltcutil.Address
 	if in.Address != "" {
-		a, err := btcutil.DecodeAddress(in.Address, &p)
+		a, err := ltcutil.DecodeAddress(in.Address, &p)
 		if err != nil {
 			return nil, err
 		}
@@ -339,7 +339,7 @@ func (s *server) SweepAddress(ctx context.Context, in *pb.SweepInfo) (*pb.Txid, 
 		addr = nil
 	}
 	var key *hdkeychain.ExtendedKey
-	wif, err := btcutil.DecodeWIF(in.Key)
+	wif, err := ltcutil.DecodeWIF(in.Key)
 	if err == nil {
 		key = hdkeychain.NewExtendedKey(
 			p.HDPrivateKeyID[:],
@@ -435,7 +435,7 @@ func (s *server) CreateMultisigSignature(ctx context.Context, in *pb.CreateMulti
 		return nil, errors.New("Unknown network parameters")
 	}
 	var key *hdkeychain.ExtendedKey
-	wif, err := btcutil.DecodeWIF(in.Key)
+	wif, err := ltcutil.DecodeWIF(in.Key)
 	if err == nil {
 		key = hdkeychain.NewExtendedKey(
 			p.HDPrivateKeyID[:],
@@ -606,7 +606,7 @@ func (s *server) GetKey(ctx context.Context, in *pb.Address) (*pb.Key, error) {
 	default:
 		return nil, errors.New("Unknown network parameters")
 	}
-	addr, err := btcutil.DecodeAddress(in.Addr, &p)
+	addr, err := ltcutil.DecodeAddress(in.Addr, &p)
 	if err != nil {
 		return nil, err
 	}
@@ -614,7 +614,7 @@ func (s *server) GetKey(ctx context.Context, in *pb.Address) (*pb.Key, error) {
 	if err != nil {
 		return nil, err
 	}
-	wif, err := btcutil.NewWIF(key, &p, true)
+	wif, err := ltcutil.NewWIF(key, &p, true)
 	if err != nil {
 		return nil, err
 	}
@@ -637,7 +637,7 @@ func (s *server) ListKeys(ctx context.Context, in *pb.Empty) (*pb.Keys, error) {
 	var list []*pb.Key
 	for _, key := range keys {
 		ret := new(pb.Key)
-		wif, err := btcutil.NewWIF(&key, s.w.Params(), true)
+		wif, err := ltcutil.NewWIF(&key, s.w.Params(), true)
 		if err != nil {
 			return nil, err
 		}

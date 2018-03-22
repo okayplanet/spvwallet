@@ -7,13 +7,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/btcsuite/btcd/addrmgr"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/connmgr"
-	"github.com/btcsuite/btcd/peer"
-	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil/bloom"
+	"github.com/ltcsuite/ltcd/addrmgr"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/connmgr"
+	"github.com/ltcsuite/ltcd/peer"
+	"github.com/ltcsuite/ltcd/wire"
+	"github.com/ltcsuite/ltcutil/bloom"
 	"golang.org/x/net/proxy"
 )
 

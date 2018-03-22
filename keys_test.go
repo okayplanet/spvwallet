@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/hex"
 	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/ltcsuite/ltcd/btcec"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/txscript"
+	"github.com/ltcsuite/ltcutil"
+	"github.com/ltcsuite/ltcutil/hdkeychain"
 	"testing"
 )
 
@@ -238,7 +238,7 @@ func TestKeyManager_GetKeyForScript(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	addr, err := btcutil.DecodeAddress("17rxURoF96VhmkcEGCj5LNQkmN9HVhWb7F", &chaincfg.MainNetParams)
+	addr, err := ltcutil.DecodeAddress("17rxURoF96VhmkcEGCj5LNQkmN9HVhWb7F", &chaincfg.MainNetParams)
 	if err != nil {
 		t.Error(err)
 	}

@@ -5,18 +5,32 @@ import (
 	"errors"
 	"fmt"
 	"github.com/OpenBazaar/openbazaar-go/bitcoin/exchange"
+
+
+	/*
 	"github.com/OpenBazaar/spvwallet"
 	"github.com/OpenBazaar/spvwallet/api"
 	"github.com/OpenBazaar/spvwallet/cli"
 	"github.com/OpenBazaar/spvwallet/db"
 	"github.com/OpenBazaar/spvwallet/gui"
 	"github.com/OpenBazaar/spvwallet/gui/bootstrap"
-	wi "github.com/OpenBazaar/wallet-interface"
+	*/
+
+	"../.."
+	"../../api"
+	"../../cli"
+	"../../db"
+	"../../gui"
+	"../../gui/bootstrap"
+
+
+
+	wi "github.com/okayplanet/wallet-interface"
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilog"
 	"github.com/atotto/clipboard"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcutil"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcutil"
 	"github.com/fatih/color"
 	"github.com/jessevdk/go-flags"
 	"github.com/natefinch/lumberjack"
@@ -103,7 +117,7 @@ func (x *Start) Execute(args []string) error {
 	}
 	basepath := config.RepoPath
 	if x.Testnet {
-		config.Params = &chaincfg.TestNet3Params
+		config.Params = &chaincfg.TestNet4Params
 		config.RepoPath = path.Join(config.RepoPath, "testnet")
 	}
 	if x.Regtest {
@@ -162,6 +176,7 @@ func (x *Start) Execute(args []string) error {
 		MaxBackups: 3,
 		MaxAge:     30, // Days
 	}
+
 	bitcoinFile := logging.NewLogBackend(w, "", 0)
 	bitcoinFileFormatter := logging.NewBackendFormatter(bitcoinFile, fileLogFormat)
 	config.Logger = logging.MultiLogger(logging.MultiLogger(bitcoinFileFormatter))
@@ -370,10 +385,10 @@ func (x *Start) Execute(args []string) error {
 						Height:       height,
 						ExchangeRate: fmt.Sprintf("%.2f", rate),
 					}
-					w.Send(bootstrap.MessageOut{Name: "statsUpdate", Payload: st})
+					w.SendMessage(bootstrap.MessageOut{Name: "statsUpdate", Payload: st})
 				case "getAddress":
 					addr := wallet.CurrentAddress(wi.EXTERNAL)
-					w.Send(bootstrap.MessageOut{Name: "address", Payload: addr.EncodeAddress()})
+					w.SendMessage(bootstrap.MessageOut{Name: "address", Payload: addr.EncodeAddress()})
 				case "send":
 					type P struct {
 						Address  string  `json:"address"`
@@ -397,14 +412,14 @@ func (x *Start) Execute(args []string) error {
 					default:
 						feeLevel = wi.NORMAL
 					}
-					addr, err := btcutil.DecodeAddress(p.Address, wallet.Params())
+					addr, err := ltcutil.DecodeAddress(p.Address, wallet.Params())
 					if err != nil {
-						w.Send(bootstrap.MessageOut{Name: "spendError", Payload: "Invalid address"})
+						w.SendMessage(bootstrap.MessageOut{Name: "spendError", Payload: "Invalid address"})
 						return
 					}
 					_, err = wallet.Spend(int64(p.Amount), addr, feeLevel)
 					if err != nil {
-						w.Send(bootstrap.MessageOut{Name: "spendError", Payload: err.Error()})
+						w.SendMessage(bootstrap.MessageOut{Name: "spendError", Payload: err.Error()})
 					}
 				case "clipboard":
 					type P struct {
@@ -445,7 +460,7 @@ func (x *Start) Execute(args []string) error {
 					if err != nil {
 						astilog.Error(err.Error())
 					}
-					w.Send(bootstrap.MessageOut{Name: "settings", Payload: string(settings)})
+					w.SendMessage(bootstrap.MessageOut{Name: "settings", Payload: string(settings)})
 				case "openbrowser":
 					var url string
 					if err := json.Unmarshal(m.Payload, &url); err != nil {
@@ -487,15 +502,15 @@ func (x *Start) Execute(args []string) error {
 					}()
 					txs, err := wallet.Transactions()
 					if err != nil {
-						w.Send(bootstrap.MessageOut{Name: "txError", Payload: err.Error()})
+						w.SendMessage(bootstrap.MessageOut{Name: "txError", Payload: err.Error()})
 					}
-					w.Send(bootstrap.MessageOut{Name: "transactions", Payload: txs})
+					w.SendMessage(bootstrap.MessageOut{Name: "transactions", Payload: txs})
 				case "getTransactions":
 					txs, err := wallet.Transactions()
 					if err != nil {
-						w.Send(bootstrap.MessageOut{Name: "txError", Payload: err.Error()})
+						w.SendMessage(bootstrap.MessageOut{Name: "txError", Payload: err.Error()})
 					}
-					w.Send(bootstrap.MessageOut{Name: "transactions", Payload: txs})
+					w.SendMessage(bootstrap.MessageOut{Name: "transactions", Payload: txs})
 				case "hide":
 					go func() {
 						rc <- 341
@@ -505,7 +520,7 @@ func (x *Start) Execute(args []string) error {
 						rc <- 649
 					}()
 				case "getMnemonic":
-					w.Send(bootstrap.MessageOut{Name: "mnemonic", Payload: wallet.Mnemonic()})
+					w.SendMessage(bootstrap.MessageOut{Name: "mnemonic", Payload: wallet.Mnemonic()})
 				}
 			},
 			RestoreAssets: gui.RestoreAssets,

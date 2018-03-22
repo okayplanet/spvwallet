@@ -6,7 +6,7 @@ import (
 
 	"github.com/OpenBazaar/spvwallet"
 	"github.com/OpenBazaar/spvwallet/db"
-	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/ltcsuite/ltcd/chaincfg"
 	"github.com/op/go-logging"
 )
 

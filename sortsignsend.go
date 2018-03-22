@@ -9,18 +9,18 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
-	btc "github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcutil/coinset"
-	hd "github.com/btcsuite/btcutil/hdkeychain"
-	"github.com/btcsuite/btcutil/txsort"
-	"github.com/btcsuite/btcwallet/wallet/txauthor"
-	"github.com/btcsuite/btcwallet/wallet/txrules"
+	"github.com/okayplanet/wallet-interface"
+	"github.com/ltcsuite/ltcd/blockchain"
+	"github.com/ltcsuite/ltcd/btcec"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/txscript"
+	"github.com/ltcsuite/ltcd/wire"
+	ltc "github.com/ltcsuite/ltcutil"
+	"github.com/ltcsuite/ltcutil/coinset"
+	hd "github.com/ltcsuite/ltcutil/hdkeychain"
+	"github.com/ltcsuite/ltcutil/txsort"
+	"github.com/okayplanet/ltcwallet/wallet/txauthor"
+	"github.com/okayplanet/ltcwallet/wallet/txrules"
 	"time"
 )
 
@@ -52,19 +52,19 @@ func (s *SPVWallet) Broadcast(tx *wire.MsgTx) error {
 type Coin struct {
 	TxHash       *chainhash.Hash
 	TxIndex      uint32
-	TxValue      btc.Amount
+	TxValue      ltc.Amount
 	TxNumConfs   int64
 	ScriptPubKey []byte
 }
 
 func (c *Coin) Hash() *chainhash.Hash { return c.TxHash }
 func (c *Coin) Index() uint32         { return c.TxIndex }
-func (c *Coin) Value() btc.Amount     { return c.TxValue }
+func (c *Coin) Value() ltc.Amount     { return c.TxValue }
 func (c *Coin) PkScript() []byte      { return c.ScriptPubKey }
 func (c *Coin) NumConfs() int64       { return c.TxNumConfs }
 func (c *Coin) ValueAge() int64       { return int64(c.TxValue) * c.TxNumConfs }
 
-func NewCoin(txid []byte, index uint32, value btc.Amount, numConfs int64, scriptPubKey []byte) coinset.Coin {
+func NewCoin(txid []byte, index uint32, value ltc.Amount, numConfs int64, scriptPubKey []byte) coinset.Coin {
 	shaTxid, _ := chainhash.NewHash(txid)
 	c := &Coin{
 		TxHash:       shaTxid,
@@ -88,7 +88,7 @@ func (w *SPVWallet) gatherCoins() map[coinset.Coin]*hd.ExtendedKey {
 		if u.AtHeight > 0 {
 			confirmations = int32(height) - u.AtHeight
 		}
-		c := NewCoin(u.Op.Hash.CloneBytes(), u.Op.Index, btc.Amount(u.Value), int64(confirmations), u.ScriptPubkey)
+		c := NewCoin(u.Op.Hash.CloneBytes(), u.Op.Index, ltc.Amount(u.Value), int64(confirmations), u.ScriptPubkey)
 		addr, err := w.ScriptToAddress(u.ScriptPubkey)
 		if err != nil {
 			continue
@@ -102,7 +102,7 @@ func (w *SPVWallet) gatherCoins() map[coinset.Coin]*hd.ExtendedKey {
 	return m
 }
 
-func (w *SPVWallet) Spend(amount int64, addr btc.Address, feeLevel wallet.FeeLevel) (*chainhash.Hash, error) {
+func (w *SPVWallet) Spend(amount int64, addr ltc.Address, feeLevel wallet.FeeLevel) (*chainhash.Hash, error) {
 	tx, err := w.buildTx(amount, addr, feeLevel, nil)
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (w *SPVWallet) EstimateFee(ins []wallet.TransactionInput, outs []wallet.Tra
 // Build a spend transaction for the amount and return the transaction fee
 func (w *SPVWallet) EstimateSpendFee(amount int64, feeLevel wallet.FeeLevel) (uint64, error) {
 	// Since this is an estimate we can use a dummy output address. Let's use a long one so we don't under estimate.
-	addr, err := btc.DecodeAddress("bc1qxtq7ha2l5qg70atpwp3fus84fx3w0v2w4r2my7gt89ll3w0vnlgspu349h", w.params)
+	addr, err := ltc.DecodeAddress("bc1qxtq7ha2l5qg70atpwp3fus84fx3w0v2w4r2my7gt89ll3w0vnlgspu349h", w.params)
 	if err != nil {
 		return 0, err
 	}
@@ -250,7 +250,7 @@ func (w *SPVWallet) EstimateSpendFee(amount int64, feeLevel wallet.FeeLevel) (ui
 	return uint64(inval - outval), err
 }
 
-func (w *SPVWallet) GenerateMultisigScript(keys []hd.ExtendedKey, threshold int, timeout time.Duration, timeoutKey *hd.ExtendedKey) (addr btc.Address, redeemScript []byte, err error) {
+func (w *SPVWallet) GenerateMultisigScript(keys []hd.ExtendedKey, threshold int, timeout time.Duration, timeoutKey *hd.ExtendedKey) (addr ltc.Address, redeemScript []byte, err error) {
 	if uint32(timeout.Hours()) > 0 && timeoutKey == nil {
 		return nil, nil, errors.New("Timeout key must be non nil when using an escrow timeout")
 	}
@@ -308,7 +308,7 @@ func (w *SPVWallet) GenerateMultisigScript(keys []hd.ExtendedKey, threshold int,
 
 	witnessProgram := sha256.Sum256(redeemScript)
 
-	addr, err = btc.NewAddressWitnessScriptHash(witnessProgram[:], w.params)
+	addr, err = ltc.NewAddressWitnessScriptHash(witnessProgram[:], w.params)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -440,8 +440,8 @@ func (w *SPVWallet) Multisign(ins []wallet.TransactionInput, outs []wallet.Trans
 	return buf.Bytes(), nil
 }
 
-func (w *SPVWallet) SweepAddress(utxos []wallet.Utxo, address *btc.Address, key *hd.ExtendedKey, redeemScript *[]byte, feeLevel wallet.FeeLevel) (*chainhash.Hash, error) {
-	var internalAddr btc.Address
+func (w *SPVWallet) SweepAddress(utxos []wallet.Utxo, address *ltc.Address, key *hd.ExtendedKey, redeemScript *[]byte, feeLevel wallet.FeeLevel) (*chainhash.Hash, error) {
+	var internalAddr ltc.Address
 	if address != nil {
 		internalAddr = *address
 	} else {
@@ -499,11 +499,11 @@ func (w *SPVWallet) SweepAddress(utxos []wallet.Utxo, address *btc.Address, key 
 		return nil, err
 	}
 	pk := privKey.PubKey().SerializeCompressed()
-	addressPub, err := btc.NewAddressPubKey(pk, w.params)
+	addressPub, err := ltc.NewAddressPubKey(pk, w.params)
 
-	getKey := txscript.KeyClosure(func(addr btc.Address) (*btcec.PrivateKey, bool, error) {
+	getKey := txscript.KeyClosure(func(addr ltc.Address) (*btcec.PrivateKey, bool, error) {
 		if addressPub.EncodeAddress() == addr.EncodeAddress() {
-			wif, err := btc.NewWIF(privKey, w.params, true)
+			wif, err := ltc.NewWIF(privKey, w.params, true)
 			if err != nil {
 				return nil, false, err
 			}
@@ -511,7 +511,7 @@ func (w *SPVWallet) SweepAddress(utxos []wallet.Utxo, address *btc.Address, key 
 		}
 		return nil, false, errors.New("Not found")
 	})
-	getScript := txscript.ScriptClosure(func(addr btc.Address) ([]byte, error) {
+	getScript := txscript.ScriptClosure(func(addr ltc.Address) ([]byte, error) {
 		if redeemScript == nil {
 			return []byte{}, nil
 		}
@@ -568,15 +568,15 @@ func (w *SPVWallet) SweepAddress(utxos []wallet.Utxo, address *btc.Address, key 
 	return &txid, nil
 }
 
-func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeLevel, optionalOutput *wire.TxOut) (*wire.MsgTx, error) {
+func (w *SPVWallet) buildTx(amount int64, addr ltc.Address, feeLevel wallet.FeeLevel, optionalOutput *wire.TxOut) (*wire.MsgTx, error) {
 	// Check for dust
 	script, _ := txscript.PayToAddrScript(addr)
-	if txrules.IsDustAmount(btc.Amount(amount), len(script), txrules.DefaultRelayFeePerKb) {
+	if txrules.IsDustAmount(ltc.Amount(amount), len(script), txrules.DefaultRelayFeePerKb) {
 		return nil, wallet.ErrorDustAmount
 	}
 
 	var additionalPrevScripts map[wire.OutPoint][]byte
-	var additionalKeysByAddress map[string]*btc.WIF
+	var additionalKeysByAddress map[string]*ltc.WIF
 
 	// Create input source
 	coinMap := w.gatherCoins()
@@ -584,14 +584,14 @@ func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeL
 	for k := range coinMap {
 		coins = append(coins, k)
 	}
-	inputSource := func(target btc.Amount) (total btc.Amount, inputs []*wire.TxIn, scripts [][]byte, err error) {
-		coinSelector := coinset.MaxValueAgeCoinSelector{MaxInputs: 10000, MinChangeAmount: btc.Amount(0)}
+	inputSource := func(target ltc.Amount) (total ltc.Amount, inputs []*wire.TxIn, scripts [][]byte, err error) {
+		coinSelector := coinset.MaxValueAgeCoinSelector{MaxInputs: 10000, MinChangeAmount: ltc.Amount(0)}
 		coins, err := coinSelector.CoinSelect(target, coins)
 		if err != nil {
 			return total, inputs, scripts, wallet.ErrorInsuffientFunds
 		}
 		additionalPrevScripts = make(map[wire.OutPoint][]byte)
-		additionalKeysByAddress = make(map[string]*btc.WIF)
+		additionalKeysByAddress = make(map[string]*ltc.WIF)
 		for _, c := range coins.Coins() {
 			total += c.Value()
 			outpoint := wire.NewOutPoint(c.Hash(), c.Index())
@@ -608,7 +608,7 @@ func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeL
 			if err != nil {
 				continue
 			}
-			wif, _ := btc.NewWIF(privKey, w.params, true)
+			wif, _ := ltc.NewWIF(privKey, w.params, true)
 			additionalKeysByAddress[addr.EncodeAddress()] = wif
 		}
 		return total, inputs, scripts, nil
@@ -634,7 +634,7 @@ func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeL
 	if optionalOutput != nil {
 		outputs = append(outputs, optionalOutput)
 	}
-	authoredTx, err := NewUnsignedTransaction(outputs, btc.Amount(feePerKB), inputSource, changeSource)
+	authoredTx, err := NewUnsignedTransaction(outputs, ltc.Amount(feePerKB), inputSource, changeSource)
 	if err != nil {
 		return nil, err
 	}
@@ -643,15 +643,16 @@ func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeL
 	txsort.InPlaceSort(authoredTx.Tx)
 
 	// Sign tx
-	getKey := txscript.KeyClosure(func(addr btc.Address) (*btcec.PrivateKey, bool, error) {
+	getKey := txscript.KeyClosure(func(addr ltc.Address) (*btcec.PrivateKey, bool, error) {
 		addrStr := addr.EncodeAddress()
 		wif := additionalKeysByAddress[addrStr]
 		return wif.PrivKey, wif.CompressPubKey, nil
 	})
 	getScript := txscript.ScriptClosure(func(
-		addr btc.Address) ([]byte, error) {
+		addr ltc.Address) ([]byte, error) {
 		return []byte{}, nil
 	})
+
 	for i, txIn := range authoredTx.Tx.TxIn {
 		prevOutScript := additionalPrevScripts[txIn.PreviousOutPoint]
 		script, err := txscript.SignTxOutput(w.params,
@@ -665,11 +666,21 @@ func (w *SPVWallet) buildTx(amount int64, addr btc.Address, feeLevel wallet.FeeL
 	return authoredTx.Tx, nil
 }
 
-func NewUnsignedTransaction(outputs []*wire.TxOut, feePerKb btc.Amount, fetchInputs txauthor.InputSource, fetchChange txauthor.ChangeSource) (*txauthor.AuthoredTx, error) {
+//Todo: Double check this type definition that was added.  I noticed the difference between InputSource at ltcwallet/wallet/txauthor and github.com/btcsuite/btcwallet/wallet/txauthor
+// InputSource provides transaction inputs referencing spendable outputs to
+// construct a transaction outputting some target amount.  If the target amount
+// can not be satisified, this can be signaled by returning a total amount less
+// than the target or by returning a more detailed error implementing
+// InputSourceError.
+type LegacyInputSource func(target ltc.Amount) (total ltc.Amount, inputs []*wire.TxIn, scripts [][]byte, err error)
 
-	var targetAmount btc.Amount
+
+func NewUnsignedTransaction(outputs []*wire.TxOut, feePerKb ltc.Amount, fetchInputs LegacyInputSource,
+	fetchChange txauthor.ChangeSource) (*txauthor.AuthoredTx, error) {
+
+	var targetAmount ltc.Amount
 	for _, txOut := range outputs {
-		targetAmount += btc.Amount(txOut.Value)
+		targetAmount += ltc.Amount(txOut.Value)
 	}
 
 	estimatedSize := EstimateSerializeSize(1, outputs, true, P2PKH)

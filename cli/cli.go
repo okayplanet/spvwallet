@@ -10,7 +10,7 @@ import (
 	"github.com/OpenBazaar/spvwallet"
 	"github.com/OpenBazaar/spvwallet/api"
 	"github.com/OpenBazaar/spvwallet/api/pb"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/ltcsuite/ltcd/wire"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jessevdk/go-flags"

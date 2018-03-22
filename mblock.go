@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"errors"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/wire"
 )
 
 func MakeMerkleParent(left *chainhash.Hash, right *chainhash.Hash) (*chainhash.Hash, error) {

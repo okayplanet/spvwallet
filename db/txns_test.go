@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/hex"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/ltcsuite/ltcd/wire"
 	"sync"
 	"testing"
 	"time"

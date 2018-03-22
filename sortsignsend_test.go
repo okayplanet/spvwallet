@@ -2,10 +2,10 @@ package spvwallet
 
 import (
 	"bytes"
-	"github.com/OpenBazaar/wallet-interface"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/okayplanet/wallet-interface"
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/chaincfg/chainhash"
+	"github.com/ltcsuite/ltcd/wire"
 	"os"
 	"testing"
 )
@@ -15,15 +15,15 @@ func MockWallet() *SPVWallet {
 
 	peerCfg := &PeerManagerConfig{
 		UserAgentVersion: WALLET_VERSION,
-		Params:           &chaincfg.TestNet3Params,
+		Params:           &chaincfg.TestNet4Params,
 		GetFilter:        txstore.GimmeFilter,
 	}
 
-	bc, _ := NewBlockchain("", MockCreationTime, &chaincfg.TestNet3Params)
+	bc, _ := NewBlockchain("", MockCreationTime, &chaincfg.TestNet4Params)
 	createBlockChain(bc)
 
 	peerManager, _ := NewPeerManager(peerCfg)
-	return &SPVWallet{txstore: txstore, peerManager: peerManager, blockchain: bc, keyManager: txstore.keyManager, params: &chaincfg.TestNet3Params}
+	return &SPVWallet{txstore: txstore, peerManager: peerManager, blockchain: bc, keyManager: txstore.keyManager, params: &chaincfg.TestNet4Params}
 }
 
 func Test_gatherCoins(t *testing.T) {
@@ -36,7 +36,7 @@ func Test_gatherCoins(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	addr1, err := key1.Address(&chaincfg.TestNet3Params)
+	addr1, err := key1.Address(&chaincfg.TestNet4Params)
 	if err != nil {
 		t.Error(err)
 	}
@@ -67,7 +67,7 @@ func Test_gatherCoins(t *testing.T) {
 		if coin.Value() != 10000 {
 			t.Error("Returned incorrect coin value")
 		}
-		addr2, err := key.Address(&chaincfg.TestNet3Params)
+		addr2, err := key.Address(&chaincfg.TestNet4Params)
 		if err != nil {
 			t.Error(err)
 		}
